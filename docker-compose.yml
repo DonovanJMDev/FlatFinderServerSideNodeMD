@@ -1,0 +1,36 @@
+services:
+  server:
+    build: .
+    container_name: flatfinder-server
+    ports:
+      - "5001:5001"
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/flatfinder
+      - JWT_SECRET=your_jwt_secret
+      - NODE_ENV=development
+
+  mongo:
+    image: mongo:latest
+    container_name: flatfinder-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  mongo-express:
+    image: mongo-express
+    container_name: flatfinder-mongo-express
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongo
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=admin
+    depends_on:
+      - mongo
+
+volumes:
+  mongo-data:

@@ -1,49 +1,62 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const dotenv = require("dotenv");
-const { insertOrder } = require("./Controllers/OrderController");
+import express from "express";
+import mongoose from "mongoose";
+ 
 const app = express();
-
-const productRoutes = require("./routes/productRoutes");
-const userRoutes = require("./Routes/UserRoutes");
-const commentRouter = require("./Routes/CommentRouter");
-//----
-const { createProduct } = require("./Controllers/ProductController");
-const {
-  getProducts,
-  updateProduct,
-  getProductByFilter,
-} = require("./Controllers/ProductController");
-const { signup, login, profile } = require("./Controllers/UserController");
-const { verifyToken } = require("./middleware/ValidToken");
-//----
-dotenv.config(); //----
-
+const PORT = 5001; 
 app.use(express.json());
-
-const mongoURI = process.env.MONGO_URI || "mongodb://mongo:27017/testdb";
-
-mongoose
-  .connect(mongoURI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.error("MongoDB connection error:", err));
-
-app.post("/api/products", createProduct);
-app.get("/api/products", getProducts);
-app.post("/api/products/:id", updateProduct);
-app.get("/api/products/filter", getProductByFilter);
-app.post("/api/signup", signup);
-app.post("/api/login", login); //----
-app.get("/api/profile", verifyToken, profile);
-app.use("/api/product", productRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/comments", commentRouter);
-
-// insert order
-app.post("/api/orders", insertOrder);
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+ 
+// MongoDB connection
+const mongoUri = process.env.MONGO_URI || "mongodb://mongo:27017/flatfinder";
+ 
+mongoose.connect(mongoUri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log("✅ MongoDB connected"))
+.catch(err => console.error("❌ Error connecting to MongoDB:", err));
+ 
+// --- User model ---
+const userSchema = new mongoose.Schema({
+  email: String,
+  password: String,
+  firstName: String,
+  lastName: String,
+  birthDate: Date
+});
+ 
+const User = mongoose.model("User", userSchema);
+ 
+// --- Routes ---
+ 
+// Test route
+app.get("/", (req, res) => {
+  res.send("Server is running 🚀");
+});
+ 
+// Register user
+app.post("/users/register", async (req, res) => {
+  try {
+    const user = new User(req.body);
+    await user.save();
+    res.status(201).json({ message: "User registered ✅", user });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+ 
+// Login user (dummy example)
+app.post("/users/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email, password });
+    if (!user) return res.status(401).json({ message: "Invalid credentials ❌" });
+    res.json({ message: "Login successful ✅", user });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+ 
+// --- Start server ---
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
+});

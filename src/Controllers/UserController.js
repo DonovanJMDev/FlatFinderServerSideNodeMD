@@ -1,39 +1,66 @@
-const { signupService, loginService } = require("../services/authService");
+const User = require('../models/User');
+const generateToken = require('../utils/token');
+const bcrypt = require('bcryptjs');
 
-async function signup(req, res) {
+// Registro de usuario
+const registerUser = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { email, password, firstName, lastName, birthDate } = req.body;
 
-    const { token, user } = await signupService({ username, email, password });
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
 
-    return res.status(201).json({
-      message: "Signup Successfully",
-      token,
-      user,
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      email,
+      password: hashedPassword,
+      firstName,
+      lastName,
+      birthDate,
     });
-  } catch (err) {
-    console.error(err);
-    return res.status(400).json({ message: err.message });
-  }
-}
 
-async function login(req, res) {
+    if (user) {
+      res.status(201).json({
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        token: generateToken(user._id),
+      });
+    } else {
+      res.status(400).json({ message: 'Invalid user data' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Login de usuario
+const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const token = await loginService(email, password);
-
-    return res.status(200).json({
-      message: "Login Successfully",
-      token,
-    });
-  } catch (err) {
-    console.error(err);
-    return res.status(400).json({ message: err.message });
+    const user = await User.findOne({ email });
+    if (user && (await bcrypt.compare(password, user.password))) {
+      res.json({
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        token: generateToken(user._id),
+      });
+    } else {
+      res.status(401).json({ message: 'Invalid email or password' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
-}
-async function profile(req, res) {
-    return res.status(200).json({ message: "Welcome to profile"} );
-}
+};
 
-module.exports = { signup ,login,profile};
+module.exports = {
+  registerUser,
+  loginUser,
+};
