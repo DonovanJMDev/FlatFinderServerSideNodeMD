@@ -5,7 +5,7 @@ const { insertOrder } = require("./Controllers/OrderController");
 const app = express();
 
 const productRoutes = require("./routes/productRoutes");
-const userRoutes = require("./routes/userRoutes");
+const userRoutes = require("./Routes/UserRoutes");
 const commentRouter = require("./Routes/CommentRouter");
 //----
 const { createProduct } = require("./Controllers/ProductController");
