@@ -2,11 +2,13 @@ import express from "express";
 import mongoose from "mongoose";
 import userRouter from "./Routes/UserRoutes.js";
 import User from "./Models/UserModel.js";
+import flatRouter from "./Routes/FlatRoutes.js";
 
 const app = express();
 
 app.use(express.json());
 app.use("/users", userRouter);
+app.use("/flats", flatRouter);
 
 const PORT = 5001;
 
