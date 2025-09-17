@@ -19,7 +19,7 @@ router.get("/", protect, adminOnly, async (req, res) => {
 });
 
 // ====================
-// REGISTER (allows admin if sent in body)
+// REGISTER
 // ====================
 router.post("/register", async (req, res) => {
   try {
@@ -39,7 +39,7 @@ router.post("/register", async (req, res) => {
       firstName,
       lastName,
       birthDate,
-      isAdmin: isAdmin === true ? true : false,
+      isAdmin: isAdmin === true,
       favouriteFlatsList: [],
     });
 
@@ -127,12 +127,10 @@ router.patch("/:id", protect, accountOwnerOrAdmin, async (req, res) => {
   try {
     const updates = {};
 
-    // Only update if the field is present in the request body
     if (req.body.firstName) updates.firstName = req.body.firstName;
     if (req.body.lastName) updates.lastName = req.body.lastName;
     if (req.body.birthDate) updates.birthDate = req.body.birthDate;
 
-    // Hash password if updated
     if (req.body.password) {
       const salt = await bcrypt.genSalt(10);
       updates.password = await bcrypt.hash(req.body.password, salt);

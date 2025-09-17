@@ -1,9 +1,8 @@
-const User = require("../Models/User");
-const generateToken = require("../utils/token");
-const bcrypt = require("bcryptjs");
-module.exports = { registerUser, loginUser };
+import User from "../Models/UserModel.js";
+import generateToken from "../utils/token.js";
+import bcrypt from "bcryptjs";
 
-// Registro de usuario
+// Register a new user
 export const registerUser = async (req, res) => {
   try {
     const { email, password, firstName, lastName, birthDate } = req.body;
@@ -39,7 +38,7 @@ export const registerUser = async (req, res) => {
   }
 };
 
-// Login de usuario
+// Login user
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -59,9 +58,4 @@ export const loginUser = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-};
-
-module.exports = {
-  registerUser,
-  loginUser,
 };
